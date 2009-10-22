@@ -641,6 +641,13 @@ $emailtype|$newincidentstatus|$timetonextaction_none|$timetonextaction_days|$tim
             $errors = 1;
             $error_string .= "<p class='error'>".sprintf($strFieldMustNotBeBlank, $strReplyTo)."</p>\n";
         }
+        $errorcode = $_FILES['attachment']['error'];
+        // check the for errors related to file size in php.ini(upload_max_filesize) TODO: Should i18n this..
+        if ($errorcode == 1 || $errorcode == 2)
+        {
+            $errors = 1;
+            $error_string .= "<p>".get_file_upload_error_message($_FILES['attachment']['error'], $_FILES['attachment']['name'])."</p>\n";
+        }
         // Store email body in session if theres been an error
         if ($errors > 0) $_SESSION['temp-emailbody'] = $bodytext;
         else unset($_SESSION['temp-emailbody']);
@@ -894,9 +901,7 @@ $emailtype|$newincidentstatus|$timetonextaction_none|$timetonextaction_days|$tim
         else
         {
             // there were errors
-            include (APPLICATION_INCPATH . 'incident_html_top.inc.php');
-            echo $error_string;
-            include (APPLICATION_INCPATH . 'incident_html_bottom.inc.php');
+            html_redirect("incident_email.php?id={$id}&step=2&draftid={$draftid}", FALSE, $error_string);
         }
     break;
 
